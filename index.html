@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>ChatGPT - Assistant WhatsApp Sécurité</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        body {
+            background: #212121;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            background: #343541;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+            max-height: 750px;
+        }
+        .chat-header {
+            background: #202123;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #4d4d4f;
+        }
+        .chat-header h1 {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-header h1 span {
+            background: #19c37d;
+            color: #fff;
+            font-size: 12px;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        .dev-badge {
+            color: #aaa;
+            font-size: 12px;
+            text-align: right;
+        }
+        .dev-badge .dev-name {
+            color: #19c37d;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: #343541;
+        }
+        .messages-area::-webkit-scrollbar {
+            width: 6px;
+        }
+        .messages-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .messages-area::-webkit-scrollbar-thumb {
+            background: #565869;
+            border-radius: 3px;
+        }
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 90%;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        .message.bot {
+            align-self: flex-start;
+        }
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .message.user .avatar {
+            background: #5436da;
+            color: #fff;
+        }
+        .message.bot .avatar {
+            background: #19c37d;
+            color: #fff;
+        }
+        .bubble {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        .message.user .bubble {
+            background: #5436da;
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+        .message.bot .bubble {
+            background: #444654;
+            color: #ececf1;
+            border-bottom-left-radius: 4px;
+        }
+        .message.bot .bubble strong {
+            color: #19c37d;
+        }
+        .message.bot .bubble code {
+            background: #2a2b32;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            color: #f9a825;
+        }
+        .message.bot .bubble ul {
+            margin: 8px 0 8px 20px;
+        }
+        .message.bot .bubble li {
+            margin-bottom: 4px;
+        }
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 4px 0;
+        }
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #888;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        .input-area {
+            padding: 16px 24px;
+            background: #343541;
+            border-top: 1px solid #4d4d4f;
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        .input-area textarea {
+            flex: 1;
+            background: #40414f;
+            border: 1px solid #565869;
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: #fff;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            min-height: 48px;
+            max-height: 120px;
+            line-height: 1.5;
+            transition: border-color 0.2s;
+        }
+        .input-area textarea:focus {
+            border-color: #19c37d;
+        }
+        .input-area textarea::placeholder {
+            color: #8e8ea0;
+        }
+        .input-area button {
+            background: #19c37d;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            white-space: nowrap;
+            height: 48px;
+        }
+        .input-area button:hover {
+            background: #15a76c;
+        }
+        .input-area button:active {
+            transform: scale(0.96);
+        }
+        .input-area button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .footer-info {
+            background: #202123;
+            padding: 10px 24px;
+            text-align: center;
+            font-size: 11px;
+            color: #6b6b7b;
+            border-top: 1px solid #4d4d4f;
+        }
+        .footer-info .highlight {
+            color: #19c37d;
+        }
+        .footer-info .contact {
+            color: #f9a825;
+            font-weight: 600;
+        }
+        @media (max-width: 600px) {
+            .chat-container { height: 95vh; max-height: none; border-radius: 12px; }
+            .chat-header { padding: 12px 16px; flex-wrap: wrap; gap: 4px; }
+            .chat-header h1 { font-size: 15px; }
+            .dev-badge { font-size: 10px; width: 100%; text-align: left; }
+            .messages-area { padding: 16px; }
+            .message { max-width: 100%; }
+            .input-area { padding: 12px 16px; flex-wrap: wrap; }
+            .input-area button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container" id="app">
+    <div class="chat-header">
+        <h1>
+            🤖 GPT Assistant
+            <span>WhatsApp</span>
+        </h1>
+        <div class="dev-badge">
+            Développé par <span class="dev-name">₩₳ⱧⱫ_฿ØɎ</span>
+        </div>
+    </div>
+
+    <div class="messages-area" id="messagesArea">
+        <div class="message bot">
+            <div class="avatar">AI</div>
+            <div class="bubble">
+                👋 Bonjour ! Je suis l'assistant spécialisé en sécurité WhatsApp.  
+                Posez-moi toutes vos questions sur <strong>l'hébergement sécurisé d'un bot WhatsApp</strong>.
+                <br/><br/>
+                💡 <em>Vous pouvez aussi cliquer sur le bouton ci-dessous pour une réponse complète</em>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-area">
+        <textarea id="userInput" placeholder="Posez votre question sur l'hébergement sécurisé d'un bot WhatsApp..." rows="1"></textarea>
+        <button id="sendBtn" onclick="handleSend()">Envoyer</button>
+    </div>
+
+    <div class="footer-info">
+        🔒 Sécurité &bull; WhatsApp Bot &bull; Contacter le dev : <span class="contact">22897554798</span>
+        &nbsp;|&nbsp; <span class="highlight">₩₳ⱧⱫ_฿ØɎ</span>
+    </div>
+</div>
+
+<script>
+    const messagesArea = document.getElementById('messagesArea');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // ===== RÉPONSE PRÉDÉFINIE SUR L'HÉBERGEMENT SÉCURISÉ D'UN BOT WHATSAPP =====
+    const SECURITY_RESPONSE = `🔐 <strong>Guide complet : Héberger un bot WhatsApp en toute sécurité</strong>
+
+Voici les étapes essentielles pour un hébergement sécurisé :
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+<strong>1️⃣ Choix du serveur (VPS)</strong>
+• Utilisez un VPS Linux (Ubuntu 22.04 LTS recommandé)
+• Hébergeurs fiables : Hetzner, DigitalOcean, OVH, AWS EC2
+• Minimum : 1 CPU, 1 Go RAM, 20 Go SSD
+
+<strong>2️⃣ Sécurisation du serveur</strong>
+• SSH : changez le port (2222 par exemple), désactivez l'auth par mot de passe, utilisez une clé SSH
+• UFW : ouvrez uniquement les ports nécessaires (22, 80, 443, et le port du bot)
+• Fail2ban : protège contre les tentatives de brute-force
+• Mettez à jour le système régulièrement : <code>sudo apt update && sudo apt upgrade -y</code>
+
+<strong>3️⃣ Installation du bot WhatsApp</strong>
+• Utilisez <code>whatsapp-web.js</code> (Node.js) ou <code>venom-bot</code>
+• <code>npm install whatsapp-web.js qrcode-terminal</code>
+• Authentifiez via QR code scanné avec WhatsApp
+
+<strong>4️⃣ Gestion des tokens sécurisée</strong>
+• Stockez les sessions dans un dossier <code>./sessions</code>
+• Utilisez <code>.env</code> pour les variables sensibles :
+  <code>BOT_NUMBER=22897554798</code>
+  <code>SESSION_SECRET=une_chaine_aleatoire</code>
+• JAMAIS de tokens en dur dans le code !
+
+<strong>5️⃣ Reverse Proxy avec Nginx</strong>
+• Installez Nginx et Certbot pour HTTPS
+• <code>sudo apt install nginx certbot python3-certbot-nginx</code>
+• Configurez un proxy inverse vers le port du bot
+• Activez HTTPS avec Let's Encrypt
+
+<strong>6️⃣ Monitoring et logs</strong>
+• PM2 pour le process manager : <code>npm install -g pm2 && pm2 start bot.js</code>
+• Journalisation des connexions et des erreurs
+• Alerte en cas d'arrêt du bot (UptimeRobot, Healthchecks.io)
+
+<strong>7️⃣ Bonnes pratiques supplémentaires</strong>
+• Limitez les messages par minute pour éviter le ban
+• Utilisez des proxies ou rotate IP si envoi massif
+• Respectez les conditions d'utilisation de WhatsApp
+• Sauvegardez régulièrement le dossier <code>sessions</code>
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+📞 <strong>Contact du développeur : 22897554798</strong>
+👨‍💻 <strong>Développé par : ₩₳ⱧⱫ_฿ØɎ</strong>
+
+⚠️ <em>Rappel : assurez-vous d'avoir l'autorisation avant d'interagir avec des numéros WhatsApp. L'utilisation de bots WhatsApp doit respecter les CGU de Meta.</em>`;
+
+    // ===== GESTION DE L'ENVOI =====
+    function handleSend() {
+        const text = userInput.value.trim();
+        if (!text) return;
+
+        // Affiche le message utilisateur
+        addMessage(text, 'user');
+        userInput.value = '';
+        userInput.style.height = 'auto';
+        sendBtn.disabled = true;
+
+        // Simule la frappe du bot
+        showTyping();
+
+        // Réponse après un délai réaliste
+        setTimeout(() => {
+            removeTyping();
+
+            // Vérifie si la question concerne l'hébergement WhatsApp
+            const lower = text.toLowerCase();
+            let response = '';
+
+            if (lower.includes('whatsapp') || lower.includes('bot') || lower.includes('héberg') || lower.includes('secur') || lower.includes('heberg') || lower.includes('sécur') || lower.includes('install') || lower.includes('serveur') || lower.includes('vps') || lower.includes('deploi') || lower.includes('déploi') || lower.includes('comment')) {
+                response = SECURITY_RESPONSE;
+            } else {
+                response = `💬 Je suis spécialisé dans l'<strong>hébergement sécurisé des bots WhatsApp</strong>.\n\nPosez-moi une question sur :\n• Comment héberger un bot WhatsApp ?\n• Sécurisation d'un serveur pour bot\n• Installation de whatsapp-web.js\n• Configuration Nginx/HTTPS\n• Gestion des sessions WhatsApp\n\n📞 Dé
